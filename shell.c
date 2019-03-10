@@ -13,6 +13,7 @@ int main() {
     char **commands;
     pid_t child;
     int child_stat = 0;
+    int exec_value = 0;
 
     while (1) {
         input = readline("seashell> ");
@@ -21,7 +22,11 @@ int main() {
         child = fork();
 
         if (child == 0) {
-            execvp(commands[0], commands);
+            exec_value = execvp(commands[0], commands);
+            if (exec_value == -1) {
+                perror("couldn't execute command");
+                exit(1);
+            }
         }
         else {
             waitpid(child, &child_stat, WUNTRACED);
@@ -36,6 +41,10 @@ int main() {
 
 char **parse_input(char *input) {
     char **args = malloc(16 * sizeof(char *));
+    if (args == NULL) {
+        perror("malloc call unsuccessful");
+        exit(1);
+    }
     char *token;
     int element = 0;
 
