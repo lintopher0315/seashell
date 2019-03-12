@@ -6,32 +6,24 @@
 #include <sys/wait.h>
 
 char **parse_input(char *);
+int handle_command(char **);
 
 int main() {
 
     char *input = "";
     char **commands;
-    pid_t child;
-    int child_stat = 0;
-    int exec_value = 0;
+    int command_ret = 0;
 
     while (1) {
         input = readline("seashell> ");
         commands = parse_input(input);
 
-        child = fork();
+        command_ret = handle_command(commands);
 
-        if (child == 0) {
-            exec_value = execvp(commands[0], commands);
-            if (exec_value == -1) {
-                perror("couldn't execute command");
-                exit(1);
-            }
+        if (command_ret == -1) {
+            printf("Try again\n");
         }
-        else {
-            waitpid(child, &child_stat, WUNTRACED);
-        }
-
+        
         free(input);
         free(commands);
     }
@@ -58,4 +50,37 @@ char **parse_input(char *input) {
     args[element] = NULL;
 
     return args;
+}
+
+int handle_command(char **input) {
+    pid_t child;
+    int child_stat = 0;
+    int exec_value = 0;
+
+    if (strcmp(input[0], "cd") == 0) {
+        if (input[1] == NULL) {
+            chdir(getenv("HOME"));
+        }
+        else {
+            if (chdir(input[1]) == -1) {
+                printf("%s: not a valid directory\n", input[1]);
+                return -1;
+            }
+        }
+    }
+    else {
+        child = fork();
+
+        if (child == 0) {
+            exec_value = execvp(input[0], input);
+            if (exec_value == -1) {
+                perror("couldn't execute command");
+                return -1;
+            }
+        }
+        else {
+            waitpid(child, &child_stat, WUNTRACED);
+        }
+    }
+    return 0;
 }
