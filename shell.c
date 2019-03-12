@@ -1,12 +1,11 @@
+#include "shell.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <readline/readline.h>
 #include <unistd.h>
 #include <sys/wait.h>
-
-char **parse_input(char *);
-int handle_command(char **);
 
 int main() {
 
@@ -21,7 +20,9 @@ int main() {
         command_ret = handle_command(commands);
 
         if (command_ret == -1) {
-            printf("Try again\n");
+            free(input);
+            free(commands);
+            break;
         }
         
         free(input);
@@ -64,9 +65,12 @@ int handle_command(char **input) {
         else {
             if (chdir(input[1]) == -1) {
                 printf("%s: not a valid directory\n", input[1]);
-                return -1;
+                return 0;
             }
         }
+    }
+    else if (strcmp(input[0], "exit") == 0) {
+        return -1;
     }
     else {
         child = fork();
@@ -75,7 +79,7 @@ int handle_command(char **input) {
             exec_value = execvp(input[0], input);
             if (exec_value == -1) {
                 perror("couldn't execute command");
-                return -1;
+                return 0;
             }
         }
         else {
