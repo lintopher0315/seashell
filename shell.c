@@ -20,8 +20,8 @@ int main() {
 
     history = calloc(MAX_HISTORY * sizeof(char *), 1);
 
-    if (access("seashell_history.txt", F_OK) != -1) {
-        fp = fopen("seashell_history.txt", "ab+");
+    if (access(HISTORY, F_OK) != -1) {
+        fp = fopen(HISTORY, "ab+");
         if (fp == NULL) {
             printf("couldn't access history\n");
             free(history);
@@ -37,7 +37,7 @@ int main() {
         }
     }
     else {
-        fp = fopen("seashell_history.txt", "ab+");
+        fp = fopen(HISTORY, "ab+");
         if (fp == NULL) {
             printf("couldn't access history\n");
             free(history);
@@ -50,6 +50,8 @@ int main() {
 
     while (1) {
         input = readline("seashell> ");
+
+        append_history(input);
         commands = parse_input(input);
 
         command_ret = handle_command(commands);
@@ -109,6 +111,9 @@ int handle_command(char **input) {
     else if (strcmp(input[0], "exit") == 0) {
         return -1;
     }
+    else if (strcmp(input[0], "history") == 0) {
+        print_history();
+    }
     else {
         child = fork();
 
@@ -147,6 +152,29 @@ int read_in_history(FILE *file_pointer) {
             return -1;
         }
         history_loc++;
+    }
+    return 0;
+}
+
+int append_history(char *command) {
+    if (history_size >= MAX_HISTORY) {
+        for (int i = 0; i < MAX_HISTORY - 1; i++) {
+            strcpy(history[i], history[i + 1]);
+        }
+
+        strcpy(history[MAX_HISTORY - 1], command);
+    }
+    else {
+        history[history_size] = malloc(MAX_ARG_LENGTH * sizeof(char));
+        strcpy(history[history_size], command);
+        history_size++;
+    }
+    return 0;
+}
+
+int print_history(void) {
+    for (int i = 0; i < history_size; i++) {
+        printf("%d\t%s\n", i + 1, history[i]);
     }
     return 0;
 }
