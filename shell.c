@@ -66,6 +66,22 @@ int main() {
         free(commands);
     }
 
+    fp = fopen(HISTORY, "w");
+    if (fp == NULL) {
+        printf("couldn't access history\n");
+        free(history);
+        return 0;
+    }
+
+    if (write_in_history(fp) != 0) {
+        printf("couldn't write history\n");
+        free(history);
+        return 0;
+    }
+
+    fclose(fp);
+    fp = NULL;
+
     free(history);
 
     return 0;
@@ -175,6 +191,21 @@ int append_history(char *command) {
 int print_history(void) {
     for (int i = 0; i < history_size; i++) {
         printf("%d\t%s\n", i + 1, history[i]);
+    }
+    return 0;
+}
+
+int write_in_history(FILE *file_pointer) {
+    int write_num = fprintf(file_pointer, "%d\n", history_size);
+    if (write_num < 0) {
+        return -1;
+    }
+    int write_history = 0;
+    for (int i = 0; i < history_size; i++) {
+        write_history = fprintf(file_pointer, "%s\n", history[i]);
+        if (write_history < 0) {
+            return -1;
+        }
     }
     return 0;
 }

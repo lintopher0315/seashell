@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 #define MAX_ARGS        1024
-#define MAX_HISTORY     10
+#define MAX_HISTORY     1000
 #define MAX_ARG_LENGTH  50
 #define HISTORY         "seashell_history.txt"
 
@@ -17,5 +17,7 @@ int read_in_history(FILE *);
 int append_history(char *);
 
 int print_history(void);
+
+int write_in_history(FILE *);
 
 #endif
