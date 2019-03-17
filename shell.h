@@ -6,7 +6,7 @@
 #define MAX_ARGS        1024
 #define MAX_HISTORY     1000
 #define MAX_ARG_LENGTH  50
-#define HISTORY         "/home/christopher/Documents/seashell/seashell_history.txt"
+#define MAX_USERNAME    32
 
 char **parse_input(char *);
 

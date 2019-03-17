@@ -6,9 +6,17 @@
 #include <readline/readline.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <sys/types.h>
+#include <pwd.h>
+#include <linux/limits.h>
 
 char **history;
 int history_size = 0;
+const char *home_dir;
+char origin_dir[PATH_MAX];
+char curr_dir[PATH_MAX];
+char history_path[PATH_MAX];
+char username[MAX_USERNAME];
 
 int main() {
 
@@ -16,12 +24,25 @@ int main() {
     char **commands;
     int command_ret = 0;
 
+    if ((home_dir = getenv("HOME")) == NULL) {
+        home_dir = getpwuid(getuid())->pw_dir;
+    }
+
+    if (getcwd(curr_dir, sizeof(curr_dir)) == NULL || getcwd(origin_dir, sizeof(origin_dir)) == NULL) {
+        printf("couldn't get working directory");
+        return 0;
+    }
+
+    strcpy(history_path, origin_dir);
+    strcat(history_path, "/seashell_history.txt");
+    strcpy(username, getlogin());
+
     FILE *fp = NULL;
 
     history = calloc(MAX_HISTORY * sizeof(char *), 1);
 
-    if (access(HISTORY, F_OK) != -1) {
-        fp = fopen(HISTORY, "ab+");
+    if (access(history_path, F_OK) != -1) {
+        fp = fopen(history_path, "ab+");
         if (fp == NULL) {
             printf("couldn't access history\n");
             free(history);
@@ -37,7 +58,7 @@ int main() {
         }
     }
     else {
-        fp = fopen(HISTORY, "ab+");
+        fp = fopen(history_path, "ab+");
         if (fp == NULL) {
             printf("couldn't access history\n");
             free(history);
@@ -48,8 +69,13 @@ int main() {
     fclose(fp);
     fp = NULL;
 
+    char prompt[strlen(curr_dir) + 1];
     while (1) {
-        input = readline("seashell> ");
+        strcpy(prompt, username);
+        strcat(prompt, ":");
+        strcat(prompt, curr_dir);
+        strcat(prompt, "$ ");
+        input = readline(prompt);
 
         append_history(input);
         commands = parse_input(input);
@@ -66,7 +92,7 @@ int main() {
         free(commands);
     }
 
-    fp = fopen(HISTORY, "w");
+    fp = fopen(history_path, "w");
     if (fp == NULL) {
         printf("couldn't access history\n");
         free(history);
@@ -115,13 +141,17 @@ int handle_command(char **input) {
 
     if (strcmp(input[0], "cd") == 0) {
         if (input[1] == NULL) {
-            chdir(getenv("HOME"));
+            chdir(home_dir);
         }
         else {
             if (chdir(input[1]) == -1) {
                 printf("%s: not a valid directory\n", input[1]);
                 return 0;
             }
+        }
+        if (getcwd(curr_dir, sizeof(curr_dir)) == NULL) {
+            printf("couldn't get working directory");
+            return 0;
         }
     }
     else if (strcmp(input[0], "exit") == 0) {
