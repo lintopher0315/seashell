@@ -29,7 +29,7 @@ int main() {
     }
 
     if (getcwd(curr_dir, sizeof(curr_dir)) == NULL || getcwd(origin_dir, sizeof(origin_dir)) == NULL) {
-        printf("couldn't get working directory");
+        printf(RED "couldn't get working directory\n" RESET);
         return 0;
     }
 
@@ -44,13 +44,13 @@ int main() {
     if (access(history_path, F_OK) != -1) {
         fp = fopen(history_path, "ab+");
         if (fp == NULL) {
-            printf("couldn't access history\n");
+            printf(RED "couldn't access history\n RESET");
             free(history);
             return 0;
         }
         
         if (read_in_history(fp) != 0) {
-            printf("couldn't read in history\n");
+            printf(RED "couldn't read in history\n" RESET);
             fclose(fp);
             fp = NULL;
             free(history);
@@ -60,7 +60,7 @@ int main() {
     else {
         fp = fopen(history_path, "ab+");
         if (fp == NULL) {
-            printf("couldn't access history\n");
+            printf(RED "couldn't access history\n" RESET);
             free(history);
             return 0;
         }
@@ -94,13 +94,13 @@ int main() {
 
     fp = fopen(history_path, "w");
     if (fp == NULL) {
-        printf("couldn't access history\n");
+        printf(RED "couldn't access history\n" RESET);
         free(history);
         return 0;
     }
 
     if (write_in_history(fp) != 0) {
-        printf("couldn't write history\n");
+        printf(RED "couldn't write history\n" RESET);
         free(history);
         return 0;
     }
@@ -168,12 +168,12 @@ int handle_command(char **input) {
         }
         else {
             if (chdir(input[1]) == -1) {
-                printf("%s: not a valid directory\n", input[1]);
+                printf(RED "%s: not a valid directory\n" RESET, input[1]);
                 return 0;
             }
         }
         if (getcwd(curr_dir, sizeof(curr_dir)) == NULL) {
-            printf("couldn't get working directory");
+            printf(RED "couldn't get working directory" RESET);
             return 0;
         }
     }
@@ -189,7 +189,7 @@ int handle_command(char **input) {
         if (child == 0) {
             exec_value = execvp(input[0], input);
             if (exec_value == -1) {
-                perror("couldn't execute command");
+                perror(RED "couldn't execute command" RESET);
                 return 0;
             }
         }
