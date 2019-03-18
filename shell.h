@@ -20,4 +20,6 @@ int print_history(void);
 
 int write_in_history(FILE *);
 
+char *replace_tilde(char *);
+
 #endif

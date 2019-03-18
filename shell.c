@@ -125,6 +125,12 @@ char **parse_input(char *input) {
     token = strtok(input, " ");
 
     while (token != NULL) {
+        char *tilde_check = strchr(token, '~');
+        if (tilde_check != NULL) {
+            char *replace = replace_tilde(token);
+            strcpy(token, replace);
+            free(replace);
+        }
         args[element] = token;
         element++;
         token = strtok(NULL, " ");
@@ -132,6 +138,23 @@ char **parse_input(char *input) {
     args[element] = NULL;
 
     return args;
+}
+
+char *replace_tilde(char *input) {
+    char *replace = malloc(MAX_ARGS * sizeof(char));
+    int position = 0;
+    for (int i = 0; i < strlen(input); i++) {
+        if (input[i] == '~') {
+            strcat(replace, home_dir);
+            position += strlen(home_dir);
+        }
+        else {
+            replace[position] = input[i];
+            position++;
+        }
+    }
+    replace[position] = '\0';
+    return replace;
 }
 
 int handle_command(char **input) {
