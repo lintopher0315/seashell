@@ -45,6 +45,9 @@ int main() {
         fp = fopen(history_path, "ab+");
         if (fp == NULL) {
             printf(RED "couldn't access history\n RESET");
+            for (int i = 0; i < history_size; i++) {
+                free(history[i]);
+            }
             free(history);
             return 0;
         }
@@ -53,6 +56,9 @@ int main() {
             printf(RED "couldn't read in history\n" RESET);
             fclose(fp);
             fp = NULL;
+            for (int i = 0; i < history_size; i++) {
+                free(history[i]);
+            }
             free(history);
             return 0;
         }
@@ -61,6 +67,9 @@ int main() {
         fp = fopen(history_path, "ab+");
         if (fp == NULL) {
             printf(RED "couldn't access history\n" RESET);
+            for (int i = 0; i < history_size; i++) {
+                free(history[i]);
+            }
             free(history);
             return 0;
         }
@@ -84,23 +93,34 @@ int main() {
 
         if (command_ret == -1) {
             free(input);
+            for (int last = 0; commands[last + 1]; last++) {
+                free(commands[last]);
+            }
             free(commands);
             break;
         }
-        
         free(input);
+        for (int last = 0; commands[last + 1]; last++) {
+            free(commands[last]);
+        }
         free(commands);
     }
 
     fp = fopen(history_path, "w");
     if (fp == NULL) {
         printf(RED "couldn't access history\n" RESET);
+        for (int i = 0; i < history_size; i++) {
+            free(history[i]);
+        }
         free(history);
         return 0;
     }
 
     if (write_in_history(fp) != 0) {
         printf(RED "couldn't write history\n" RESET);
+        for (int i = 0; i < history_size; i++) {
+            free(history[i]);
+        }
         free(history);
         return 0;
     }
@@ -108,6 +128,9 @@ int main() {
     fclose(fp);
     fp = NULL;
 
+    for (int i = 0; i < history_size; i++) {
+        free(history[i]);
+    }
     free(history);
 
     return 0;
@@ -126,12 +149,14 @@ char **parse_input(char *input) {
 
     while (token != NULL) {
         char *tilde_check = strchr(token, '~');
+
+        args[element] = malloc(MAX_ARGS * sizeof(char));
         if (tilde_check != NULL) {
-            char *replace = replace_tilde(token);
-            strcpy(token, replace);
-            free(replace);
+            args[element] = replace_tilde(token);
         }
-        args[element] = token;
+        else {
+            strcpy(args[element], token);
+        }
         element++;
         token = strtok(NULL, " ");
     }
