@@ -93,15 +93,19 @@ int main() {
 
         if (command_ret == -1) {
             free(input);
-            for (int last = 0; commands[last + 1]; last++) {
-                free(commands[last]);
+            int index = 0;
+            while (commands[index] != NULL) {
+                free(commands[index]);
+                index++;
             }
             free(commands);
             break;
         }
         free(input);
-        for (int last = 0; commands[last + 1]; last++) {
-            free(commands[last]);
+        int index = 0;
+        while (commands[index] != NULL) {
+            free(commands[index]);
+            index++;
         }
         free(commands);
     }
@@ -150,11 +154,11 @@ char **parse_input(char *input) {
     while (token != NULL) {
         char *tilde_check = strchr(token, '~');
 
-        args[element] = malloc(MAX_ARGS * sizeof(char));
         if (tilde_check != NULL) {
             args[element] = replace_tilde(token);
         }
         else {
+            args[element] = malloc(MAX_ARGS * sizeof(char));
             strcpy(args[element], token);
         }
         element++;
@@ -237,7 +241,7 @@ int read_in_history(FILE *file_pointer) {
         }
         history_size = num_items;
     }
-    while (((scan_val = fscanf(file_pointer, "%s\n", cmd)) != EOF) && history_loc < MAX_HISTORY) {
+    while (((scan_val = fscanf(file_pointer, "%[^\n]\n", cmd)) != EOF) && history_loc < MAX_HISTORY) {
         if (scan_val == 1) {
             history[history_loc] = malloc(MAX_ARG_LENGTH * sizeof(char));
             strcpy(history[history_loc], cmd);
