@@ -35,7 +35,7 @@ int main() {
 
     strcpy(history_path, origin_dir);
     strcat(history_path, "/seashell_history.txt");
-    strcpy(username, getlogin());
+    strcpy(username, getpwuid(getuid())->pw_name);
 
     FILE *fp = NULL;
 
